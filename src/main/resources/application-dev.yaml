@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+  output:
+    ansi:
+      enabled: always
+
+logging:
+  level:
+    com.mipt.To_Do_List_Manager: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

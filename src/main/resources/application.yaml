@@ -1,0 +1,13 @@
+# Общие настройки
+app:
+  name: "To-Do List Manager"
+  version: "1.0.0"
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: to-do-list-manager
+  profiles:
+    active: dev
