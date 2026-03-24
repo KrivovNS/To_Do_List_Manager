@@ -7,6 +7,8 @@ import jakarta.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +61,7 @@ public class TaskService {
         log.info("DESTROY CacheService. Cache size before destroy: {}", size);
     }
 
-    public Task getTaskById(int id) {
+    public Optional<Task> getTaskById(int id) {
         return taskRepository.get(id);
     }
 

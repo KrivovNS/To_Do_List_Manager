@@ -2,20 +2,22 @@ package com.mipt.To_Do_List_Manager.repository;
 
 import com.mipt.To_Do_List_Manager.model.Task;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Репозиторий заданий с набором фиксированных данных, реализующий интерфейс TaskRepository.
  */
 public class StubTaskRepository implements TaskRepository {
 
-    private final HashMap<Integer, Task> taskRepository;
+    private final Map<Integer, Task> taskRepository;
 
     /**
      * Конструктор класса с заполнением фиксированных данных.
      */
     public StubTaskRepository(){
-        taskRepository = new HashMap<>();
+        taskRepository = new ConcurrentHashMap<>();
 
         for (int i = 1; i <= 5; i++) {
             Task task =  new Task("Title" + i, "Description" + i);
@@ -44,12 +46,12 @@ public class StubTaskRepository implements TaskRepository {
      * @return - искомое задание или null, если по такому id нету task.
      */
     @Override
-    public Task get(Integer id) {
+    public Optional<Task> get(Integer id) {
         if (taskRepository.containsKey(id)) {
-            return taskRepository.get(id);
+            return Optional.of(taskRepository.get(id));
         }
 
-        return null;
+        return Optional.empty();
     }
 
     /**

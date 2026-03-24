@@ -1,14 +1,18 @@
 package com.mipt.To_Do_List_Manager;
 
 import com.mipt.To_Do_List_Manager.model.Task;
-import com.mipt.To_Do_List_Manager.model.TaskDto;
+import com.mipt.To_Do_List_Manager.dto.TaskDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,13 +47,17 @@ public class TaskControllerTest {
         TaskDto newTask = new TaskDto("Test Task", "Test Description");
         restTemplate.postForEntity(baseUrl, newTask, Void.class);
 
-        // Получим список задач чтобы найти ID
-        ResponseEntity<Task[]> getAllResponse = restTemplate.getForEntity(baseUrl, Task[].class);
-        Task[] tasks = getAllResponse.getBody();
+        // Получим список задач как List
+        ResponseEntity<List<Task>> getAllResponse = restTemplate.exchange(baseUrl, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Task>>() {
+                }
+        );
+
+        List<Task> tasks = new ArrayList<>(getAllResponse.getBody());
         assertNotNull(tasks);
 
-        if (tasks.length > 0) {
-            Integer taskId = tasks[tasks.length - 1].getId();
+        if (!tasks.isEmpty()) {
+            Integer taskId = tasks.get(tasks.size() - 1).getId();
 
             // Получим задачу по ID
             ResponseEntity<Task> getResponse = restTemplate.getForEntity(baseUrl + "/" + taskId, Task.class);
@@ -87,10 +95,10 @@ public class TaskControllerTest {
             HttpEntity<TaskDto> requestEntity = new HttpEntity<>(updatedTask);
 
             ResponseEntity<Void> putResponse = restTemplate.exchange(
-                baseUrl + "/" + taskId,
-                HttpMethod.PUT,
-                requestEntity,
-                Void.class
+                    baseUrl + "/" + taskId,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    Void.class
             );
 
             assertEquals(HttpStatus.OK, putResponse.getStatusCode());
@@ -113,10 +121,10 @@ public class TaskControllerTest {
 
             // Удаляем задачу
             ResponseEntity<Void> deleteResponse = restTemplate.exchange(
-                baseUrl + "/" + taskId,
-                HttpMethod.DELETE,
-                null,
-                Void.class
+                    baseUrl + "/" + taskId,
+                    HttpMethod.DELETE,
+                    null,
+                    Void.class
             );
 
             assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
@@ -143,10 +151,10 @@ public class TaskControllerTest {
         HttpEntity<TaskDto> requestEntity = new HttpEntity<>(updatedTask);
 
         ResponseEntity<Void> response = restTemplate.exchange(
-            baseUrl + "/9999",
-            HttpMethod.PUT,
-            requestEntity,
-            Void.class
+                baseUrl + "/9999",
+                HttpMethod.PUT,
+                requestEntity,
+                Void.class
         );
         assertNotNull(response);
     }
@@ -154,10 +162,10 @@ public class TaskControllerTest {
     @Test
     public void testDeleteTask_NotFound() {
         ResponseEntity<Void> response = restTemplate.exchange(
-            baseUrl + "/9999",
-            HttpMethod.DELETE,
-            null,
-            Void.class
+                baseUrl + "/9999",
+                HttpMethod.DELETE,
+                null,
+                Void.class
         );
         assertNotNull(response);
     }
@@ -167,10 +175,10 @@ public class TaskControllerTest {
         HttpEntity<Void> requestEntity = new HttpEntity<>(null);
 
         ResponseEntity<Void> response = restTemplate.exchange(
-            baseUrl,
-            HttpMethod.POST,
-            requestEntity,
-            Void.class
+                baseUrl,
+                HttpMethod.POST,
+                requestEntity,
+                Void.class
         );
         assertNotNull(response);
     }

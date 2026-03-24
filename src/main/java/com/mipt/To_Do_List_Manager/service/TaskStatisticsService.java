@@ -1,10 +1,13 @@
 package com.mipt.To_Do_List_Manager.service;
 
+import com.mipt.To_Do_List_Manager.dto.RepositoryStatisticsDto;
 import com.mipt.To_Do_List_Manager.model.Task;
 import com.mipt.To_Do_List_Manager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * Сервис для демонстрации работы @Qualifier.
@@ -18,33 +21,33 @@ public class TaskStatisticsService {
 
     @Autowired
     public TaskStatisticsService(TaskRepository inMemoryTaskRepository,
-        @Qualifier("stubTaskRepository") TaskRepository stubTaskRepository) {
+                                 @Qualifier("stubTaskRepository") TaskRepository stubTaskRepository) {
         this.inMemoryTaskRepository = inMemoryTaskRepository;
         this.stubTaskRepository = stubTaskRepository;
     }
 
     /**
      * Метод, определяющий репозиторий, в котором лежит задание.
+     *
      * @param task - задание
      * @return - тип репозитория или null, если нет ни в одном из репозиториев
      */
-    public TaskRepository determineRepository(Task task) {
+    public Optional<TaskRepository> determineRepository(Task task) {
         if (inMemoryTaskRepository.contains(task)) {
-            return inMemoryTaskRepository;
+            return Optional.of(inMemoryTaskRepository);
         }
 
         if (stubTaskRepository.contains(task)) {
-            return stubTaskRepository;
+            return Optional.of(stubTaskRepository);
         }
 
-        return null;
+        return Optional.empty();
     }
 
     /**
      * Статистика обоих репозиториев.
      */
-    public void printStatistics() {
-        System.out.println("InMemory repository size: " + inMemoryTaskRepository.getAll().size());
-        System.out.println("Stub repository size: " + stubTaskRepository.getAll().size());
+    public RepositoryStatisticsDto printStatistics() {
+        return new RepositoryStatisticsDto(inMemoryTaskRepository.getAll().size(), stubTaskRepository.getAll().size());
     }
 }

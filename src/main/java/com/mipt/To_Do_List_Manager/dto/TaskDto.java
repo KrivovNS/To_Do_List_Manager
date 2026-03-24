@@ -1,11 +1,8 @@
-package com.mipt.To_Do_List_Manager.model;
+package com.mipt.To_Do_List_Manager.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
-/**
- *  DTO для endpoint`s post и put.
- */
 public class TaskDto {
     @NotBlank(message = "title обязателен")
     @JsonProperty("title")
