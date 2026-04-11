@@ -1,17 +1,29 @@
 package com.mipt.To_Do_List_Manager.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Класс, реализующий сущность задания.
  * При создании считаем, что Task не выполнена, а id присваиваем при размещении в репозитории.
  */
+@Getter
+@Setter
 public class Task {
 
     private int id;
     private String title;
     private String description;
     private boolean completed;
+    private LocalDateTime createdAt;
+    private LocalDate dueDate;
+    private Priority priority;
+    private Set<String> tags;
 
     /**
      * @param title - заголовок
@@ -21,38 +33,6 @@ public class Task {
         this.title = title;
         this.description = description;
         this.completed = false;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public boolean getCompleted() {
-        return completed;
-    }
-
-    public void setId(int newId) {
-        this.id = newId;
-    }
-
-    public void setTitle(String newTitle) {
-        this.title = newTitle;
-    }
-
-    public void setDescription(String newDescription) {
-        this.description = newDescription;
-    }
-
-    public void setCompleted(boolean isCompleted) {
-        this.completed = isCompleted;
     }
 
     @Override
