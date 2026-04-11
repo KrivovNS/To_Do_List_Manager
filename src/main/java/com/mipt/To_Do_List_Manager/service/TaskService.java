@@ -1,9 +1,14 @@
 package com.mipt.To_Do_List_Manager.service;
 
+import com.mipt.To_Do_List_Manager.dto.TaskUpdateDto;
+import com.mipt.To_Do_List_Manager.exception.TaskNotFoundException;
+import com.mipt.To_Do_List_Manager.mapper.TaskMapper;
 import com.mipt.To_Do_List_Manager.model.Task;
 import com.mipt.To_Do_List_Manager.repository.TaskRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +16,13 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
     private Map<String, Task> taskCache;
 
     @Value("${app.name}")
@@ -28,9 +33,9 @@ public class TaskService {
 
     private final Logger log = LoggerFactory.getLogger(TaskService.class);
 
-    @Autowired
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
+        this.taskMapper = taskMapper;
     }
 
     @PostConstruct
@@ -38,9 +43,9 @@ public class TaskService {
         log.info("Initializing cache for application: {} v{}", appName, appVersion);
         taskCache = new HashMap<>();
 
-        taskRepository.add(new Task("Wise thought 1", "Don`t miss deadlines"));
-        taskRepository.add(new Task("Wise thought 2", "Do everything on time"));
-        taskRepository.add(new Task("Wise thought 3", "Enjoy the moment"));
+        addTask(new Task("Wise thought 1", "Don`t miss deadlines"));
+        addTask(new Task("Wise thought 2", "Do everything on time"));
+        addTask(new Task("Wise thought 3", "Enjoy the moment"));
 
         for (Task task : taskRepository.getAll()) {
             taskCache.put(Integer.toString(task.getId()), task);
@@ -65,11 +70,17 @@ public class TaskService {
         return taskRepository.get(id);
     }
 
-    public void addTask(Task task) {
+    public Task addTask(Task task) {
+        if (task.getCreatedAt() == null) {
+            task.setCreatedAt(LocalDateTime.now());
+        }
+
         taskRepository.add(task);
+        return task;
     }
 
     public void deleteTask(int id) {
+        getTaskByIdOrThrow(id);
         taskRepository.delete(id);
     }
 
@@ -77,11 +88,19 @@ public class TaskService {
         return taskRepository.contains(task);
     }
 
-    public void updateTask(int id, Task task) {
-        taskRepository.update(id, task);
+    public Task updateTask(int id, TaskUpdateDto taskDto) {
+        Task existingTask = getTaskByIdOrThrow(id);
+        taskMapper.updateEntity(taskDto, existingTask);
+        taskRepository.update(id, existingTask);
+        return existingTask;
     }
 
     public List<Task> getAllTasks() {
         return taskRepository.getAll();
+    }
+
+    public Task getTaskByIdOrThrow(int id) {
+        return taskRepository.get(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
     }
 }
