@@ -2,7 +2,9 @@ package com.mipt.To_Do_List_Manager.repository;
 
 import com.mipt.To_Do_List_Manager.model.Task;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -13,10 +15,10 @@ import org.springframework.stereotype.Repository;
 @Primary
 public class InMemoryTaskRepository implements TaskRepository {
 
-    private final HashMap<Integer, Task> taskRepository;
+    private final Map<Integer, Task> taskRepository;
 
     public InMemoryTaskRepository(){
-        taskRepository = new HashMap<>();
+        taskRepository = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -28,12 +30,12 @@ public class InMemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public Task get(Integer id) {
+    public Optional<Task> get(Integer id) {
         if (taskRepository.containsKey(id)) {
-            return taskRepository.get(id);
+            return Optional.of(taskRepository.get(id));
         }
 
-        return null;
+        return Optional.empty();
     }
 
     @Override
