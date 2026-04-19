@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Репозиторий заданий с набором фиксированных данных, реализующий интерфейс TaskRepository.
@@ -12,12 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StubTaskRepository implements TaskRepository {
 
     private final Map<Integer, Task> taskRepository;
+    private final AtomicInteger idSequence;
 
     /**
      * Конструктор класса с заполнением фиксированных данных.
      */
     public StubTaskRepository(){
         taskRepository = new ConcurrentHashMap<>();
+        idSequence = new AtomicInteger(0);
 
         for (int i = 1; i <= 5; i++) {
             Task task =  new Task("Title" + i, "Description" + i);
@@ -25,6 +28,8 @@ public class StubTaskRepository implements TaskRepository {
 
             taskRepository.put(i, task);
         }
+
+        idSequence.set(5);
     }
 
     /**
@@ -34,7 +39,7 @@ public class StubTaskRepository implements TaskRepository {
      */
     @Override
     public void add(Task task) {
-        int id = taskRepository.size() + 1;
+        int id = idSequence.incrementAndGet();
         task.setId(id);
 
         taskRepository.put(id, task);

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -16,14 +17,16 @@ import org.springframework.stereotype.Repository;
 public class InMemoryTaskRepository implements TaskRepository {
 
     private final Map<Integer, Task> taskRepository;
+    private final AtomicInteger idSequence;
 
     public InMemoryTaskRepository(){
         taskRepository = new ConcurrentHashMap<>();
+        idSequence = new AtomicInteger(0);
     }
 
     @Override
     public void add(Task task) {
-        int id = taskRepository.size() + 1;
+        int id = idSequence.incrementAndGet();
         task.setId(id);
 
         taskRepository.put(id, task);
