@@ -1,14 +1,23 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
   output:
     ansi:
       enabled: always
 
 logging:
   level:
-    com.mipt.To_Do_List_Manager: DEBUG
+    com.mipt.To_Do_List_Manager: INFO
     org.springframework.web: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
