@@ -1,106 +1,78 @@
 package com.mipt.To_Do_List_Manager.service;
 
 import com.mipt.To_Do_List_Manager.dto.TaskUpdateDto;
+import com.mipt.To_Do_List_Manager.exception.TaskIdsNotFoundException;
 import com.mipt.To_Do_List_Manager.exception.TaskNotFoundException;
 import com.mipt.To_Do_List_Manager.mapper.TaskMapper;
 import com.mipt.To_Do_List_Manager.model.Task;
 import com.mipt.To_Do_List_Manager.repository.TaskRepository;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
-    private Map<String, Task> taskCache;
-
-    @Value("${app.name}")
-    private String appName;
-
-    @Value("${app.version}")
-    private String appVersion;
-
-    private final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
     }
 
-    @PostConstruct
-    public void initCache() {
-        log.info("Initializing cache for application: {} v{}", appName, appVersion);
-        taskCache = new HashMap<>();
-
-        addTask(new Task("Wise thought 1", "Don`t miss deadlines"));
-        addTask(new Task("Wise thought 2", "Do everything on time"));
-        addTask(new Task("Wise thought 3", "Enjoy the moment"));
-
-        for (Task task : taskRepository.getAll()) {
-            taskCache.put(Integer.toString(task.getId()), task);
-        }
-
-        log.info("Cache initialized with {} tasks", taskCache.size());
-    }
-
-    @PreDestroy
-    public void clearCache() {
-        int size = 0;
-
-        if (taskCache != null) {
-            size = taskCache.size();
-            taskCache.clear();
-        }
-
-        log.info("DESTROY CacheService. Cache size before destroy: {}", size);
-    }
-
     public Optional<Task> getTaskById(int id) {
-        return taskRepository.get(id);
+        return taskRepository.findById(id);
     }
 
     public Task addTask(Task task) {
-        if (task.getCreatedAt() == null) {
-            task.setCreatedAt(LocalDateTime.now());
-        }
-
-        taskRepository.add(task);
-        return task;
+        return taskRepository.save(task);
     }
 
     public void deleteTask(int id) {
-        getTaskByIdOrThrow(id);
-        taskRepository.delete(id);
-    }
-
-    public boolean containsTask(Task task) {
-        return taskRepository.contains(task);
+        Task task = getTaskByIdOrThrow(id);
+        taskRepository.delete(task);
     }
 
     public Task updateTask(int id, TaskUpdateDto taskDto) {
         Task existingTask = getTaskByIdOrThrow(id);
         taskMapper.updateEntity(taskDto, existingTask);
-        taskRepository.update(id, existingTask);
-        return existingTask;
+        return taskRepository.save(existingTask);
     }
 
     public List<Task> getAllTasks() {
-        return taskRepository.getAll();
+        return taskRepository.findAll();
     }
 
     public Task getTaskByIdOrThrow(int id) {
-        return taskRepository.get(id)
+        return taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+    }
+
+    public List<Task> getTasksDueWithin7Days() {
+        LocalDate now = LocalDate.now();
+        return taskRepository.findTasksDueBetween(now, now.plusDays(7));
+    }
+
+    public List<Task> getAllTasksWithAttachments() {
+        return taskRepository.findAllWithAttachments();
+    }
+
+    @Transactional(
+            propagation = Propagation.REQUIRED,
+            isolation = Isolation.READ_COMMITTED,
+            rollbackFor = TaskIdsNotFoundException.class
+    )
+    public void bulkCompleteTasks(List<Integer> ids) {
+        for (Integer taskId : ids) {
+            Task task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new TaskIdsNotFoundException(taskId));
+
+            task.setCompleted(true);
+        }
     }
 }
