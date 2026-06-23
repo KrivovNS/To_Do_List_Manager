@@ -1,17 +1,12 @@
 package com.mipt.To_Do_List_Manager.repository;
 
 import com.mipt.To_Do_List_Manager.model.TaskAttachment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface TaskAttachmentRepository {
-
-    TaskAttachment save(TaskAttachment attachment);
-
-    Optional<TaskAttachment> findById(Long id);
-
-    List<TaskAttachment> findByTaskId(Long taskId);
-
-    void deleteById(Long id);
+@Repository
+public interface TaskAttachmentRepository extends JpaRepository<TaskAttachment, Long> {
+    List<TaskAttachment> findByTask_Id(Integer taskId);
 }

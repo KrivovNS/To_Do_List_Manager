@@ -1,6 +1,7 @@
 package com.mipt.To_Do_List_Manager.service;
 
 import com.mipt.To_Do_List_Manager.model.TaskAttachment;
+import com.mipt.To_Do_List_Manager.model.Task;
 import com.mipt.To_Do_List_Manager.repository.TaskAttachmentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -52,7 +53,7 @@ public class AttachmentService {
     }
 
     public TaskAttachment storeAttachment(Long taskId, MultipartFile file) {
-        validateTaskExists(taskId);
+        Task task = taskService.getTaskByIdOrThrow(toIntTaskId(taskId));
 
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
@@ -84,7 +85,7 @@ public class AttachmentService {
         }
 
         TaskAttachment attachment = new TaskAttachment();
-        attachment.setTaskId(taskId);
+        attachment.setTask(task);
         attachment.setFileName(originalName);
         attachment.setStoredFileName(storedFileName);
         attachment.setContentType(
@@ -134,15 +135,9 @@ public class AttachmentService {
     }
 
     public List<TaskAttachment> getAttachmentsByTaskId(Long taskId) {
-        validateTaskExists(taskId);
-        return taskAttachmentRepository.findByTaskId(taskId);
-    }
-
-    private void validateTaskExists(Long taskId) {
-        int id = toIntTaskId(taskId);
-        if (taskService.getTaskById(id).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found");
-        }
+        int normalizedTaskId = toIntTaskId(taskId);
+        taskService.getTaskByIdOrThrow(normalizedTaskId);
+        return taskAttachmentRepository.findByTask_Id(normalizedTaskId);
     }
 
     private int toIntTaskId(Long taskId) {

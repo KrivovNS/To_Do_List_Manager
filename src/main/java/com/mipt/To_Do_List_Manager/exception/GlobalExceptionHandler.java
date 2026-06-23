@@ -164,6 +164,19 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(TaskIdsNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTaskIdsNotFound(
+            TaskIdsNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                request,
+                Map.of()
+        );
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(
             ResponseStatusException ex,
