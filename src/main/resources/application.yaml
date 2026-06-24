@@ -11,6 +11,14 @@ app:
       url: "http://localhost:8080/swagger-ui.html"
   attachments:
     upload-dir: uploads
+  security:
+    jwt-secret: ${JWT_SECRET:change-me-to-a-long-development-secret}
+    jwt-expiration: 30m
+    password-pepper: ${PASSWORD_PEPPER:local-pepper}
+  external:
+    base-url: ${EXTERNAL_API_BASE_URL:http://localhost:8080/external/v1}
+    connect-timeout: 1s
+    read-timeout: 2s
 
 server:
   port: 8080
@@ -33,3 +41,26 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,circuitbreakers,ratelimiters
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 6
+        minimumNumberOfCalls: 4
+        failureRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 2
+        waitDurationInOpenState: 10s
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
