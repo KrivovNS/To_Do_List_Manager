@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -172,6 +173,45 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 ex.getMessage(),
+                request,
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<ErrorResponse> handleExternalApiException(
+            ExternalApiException ex,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                HttpStatus.BAD_GATEWAY,
+                ex.getMessage(),
+                request,
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(ExternalRateLimitException.class)
+    public ResponseEntity<ErrorResponse> handleExternalRateLimitException(
+            ExternalRateLimitException ex,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                HttpStatus.TOO_MANY_REQUESTS,
+                ex.getMessage(),
+                request,
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            AuthenticationException ex,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid username or password",
                 request,
                 Map.of()
         );

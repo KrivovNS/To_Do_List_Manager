@@ -13,7 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type")
-                .exposedHeaders("X-Total-Count", "X-API-Version")
+                .exposedHeaders("X-Total-Count", "X-API-Version", "X-Trace-Id")
                 .allowCredentials(true);
     }
 }
